@@ -1,4 +1,15 @@
-import { useEffect, useState } from 'react'
+function debounce(callback, delay) {
+  let timer;
+
+  return (value) => {
+    clearTimeout(timer),
+      timer = setTimeout(() => {
+        callback(value)
+      }, delay)
+  }
+}
+
+import { useCallback, useEffect, useState } from 'react'
 
 
 function App() {
@@ -6,15 +17,16 @@ function App() {
   const [query, setQuery] = useState('')
   const [products, setProducts] = useState([])
 
-  useEffect(() => {
-    fetch(`http://localhost:3333/products?search=${query}`)
-      .then(res => res.json())
-      .then(data => setProducts(data))
-  }, [query])
-
-  console.log(products);
-
-
+  const handleSearch = useCallback(
+    debounce((query) => {
+      fetch(`http://localhost:3333/products?search=${query}`)
+        .then(res => res.json())
+        .then(data => setProducts(data))
+        .catch(error => console.error(error))
+        .finally(console.log(products)
+        )
+    }, 1000), []
+  )
 
   return (
     <>
@@ -24,8 +36,11 @@ function App() {
           type="text"
           className='form-control'
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder='Cerca ...'
+          onChange={(e) => {
+            handleSearch(e.target.value);
+            setQuery(e.target.value)
+          }}
+          placeholder='Cerca...'
         />
 
 
