@@ -9,13 +9,14 @@ function debounce(callback, delay) {
   }
 }
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 
 function App() {
 
   const [query, setQuery] = useState('')
   const [products, setProducts] = useState([])
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   const handleSearch = useCallback(
     debounce((query) => {
@@ -27,6 +28,14 @@ function App() {
         )
     }, 1000), []
   )
+
+  const handleSelection = (p) => {
+    fetch(`http://localhost:3333/products/${p.id}}`)
+      .then(res => res.json())
+      .then(data => setSelectedProduct(data))
+      .catch(error => console.error(error))
+      .finally(setQuery(''))
+  }
 
   return (
     <>
@@ -45,23 +54,34 @@ function App() {
 
 
         {query &&
-
           <div className="dropdown-menu show w-100 ">
             {products.map(product => (
-              <a
+              <div
                 key={product.id}
                 className="dropdown-item"
-                href="#"
+                onClick={() => {
+                  handleSelection(product);
+                  setQuery('')
+                }}
               >
                 {product.name}
-              </a>
+              </div>
             ))}
           </div>
-
-
         }
 
-      </div>
+        {selectedProduct &&
+          <div className="card mt-4 p-3">
+            <img src={selectedProduct.image} className="card-img-top" alt={selectedProduct.name} />
+            <div className="card-body">
+              <h5 className="card-title">{selectedProduct.name}</h5>
+              <p className="card-text">Brand: {selectedProduct.brand}</p>
+              <p className="card-text">Price: ${selectedProduct.price}</p>
+            </div>
+          </div>
+        }
+
+      </div >
 
     </>
   )
